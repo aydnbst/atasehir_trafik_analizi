@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Ataşehir Canlı Emisyon Haritası - Komuta Merkezi</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { margin: 0; padding: 0; font-family: sans-serif; display: flex; height: 100vh; overflow: hidden; background: #1a252f; }
+        #map { height: 100vh; width: 73%; }
+        #sidebar { width: 27%; padding: 20px; background: #1a252f; color: #ecf0f1; display: flex; flex-direction: column; border-right: 2px solid #2c3e50; height: 100vh; justify-content: space-between; }
+        .stats-container { overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; }
+        h2 { color: #2ecc71; margin-top: 0; margin-bottom: 5px; font-size: 20px; }
+        .subtitle { color: #95a5a6; font-size: 12px; margin-bottom: 12px; }
+        .card { background: #2c3e50; padding: 12px 15px; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid #34495e; }
+        .card h3 { margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; color: #bdc3c7; letter-spacing: 0.5px; }
+        .card p { margin: 0; font-size: 24px; font-weight: bold; }
+        
+        /* Kamera Görüntü Alanı */
+        #camera-container { width: 100%; margin-top: auto; border-radius: 8px; overflow: hidden; border: 2px solid #34495e; background: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        #camera-feed { width: 100%; height: auto; display: block; object-fit: cover; }
+        
+        .footer-text { font-size: 11px; color: #7f8c8d; padding-top: 8px; border-top: 1px solid #2c3e50; margin-top: 10px; }
+        hr { border: 0; height: 1px; background: #2c3e50; margin: 12px 0; }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <div class="stats-container">
+            <h2>Canlı Komuta Merkezi</h2>
+            <div class="subtitle">Ataşehir Dereyolu Caddesi Kavşağı</div>
+            <p style="font-size: 13px; margin: 0;"><strong>Metot:</strong> 100m CBS Tampon Bölgesi</p>
+            <hr>
+            
+            <div class="card" style="border-left-color: #3498db;">
+                <h3>Anlık Araç Sayısı</h3>
+                <p id="current-count">0</p>
+            </div>
+            
+            <div class="card" style="border-left-color: #f1c40f;">
+                <h3>Toplam Geçen Araç</h3>
+                <p id="total-count">0</p>
+            </div>
+            
+            <div class="card" style="border-left-color: #e74c3c;">
+                <h3>Toplam Karbon Salınımı</h3>
+                <p id="total-co2">0 g CO₂</p>
+            </div>
+
+            <div id="camera-container">
+                <div style="background: #2c3e50; padding: 6px 12px; color: #fff; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;">
+                    🔴 CANLI YAPAY ZEKA ANALİZ AKIŞI
+                </div>
+                <img id="camera-feed" src="http://127.0.0.1:5000/video_feed" alt="Trafik Yayını Yüklüyor...">
+            </div>
+        </div>
+        
+        <div class="footer-text">
+            Son Güncelleme: <span id="last-update" style="color: #2ecc71; font-weight: bold;">-</span>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const centerCoords = [40.98833, 29.12550];
+        const map = L.map('map').setView(centerCoords, 17);
+
+        // Dark Mode altlık katmanı
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap & CartoDB'
+        }).addTo(map);
+
+        let bufferLayer = null;
+
+        function updateMapData() {
+            // Canlı trafik JSON dosyasını oku
+            fetch('live_traffic_data.json')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('current-count').innerText = data.current_vehicle_count;
+                    document.getElementById('total-count').innerText = data.total_vehicles_passed;
+                    document.getElementById('total-co2').innerText = data.total_co2_grams + " g";
+                    document.getElementById('last-update').innerText = data.last_update;
+
+                    if (bufferLayer) {
+                        map.removeLayer(bufferLayer);
+                    }
+
+                    // Dinamik 100 metre yarıçaplı buffer güncellemesi
+                    bufferLayer = L.circle(centerCoords, {
+                        radius: 100,
+                        color: data.status_color,
+                        fillColor: data.status_color,
+                        fillOpacity: 0.35,
+                        weight: 2
+                    }).addTo(map);
+                    
+                    bufferLayer.bindPopup(`
+                        <b>Kamera Etki Alanı Analizi</b><br>
+                        Yoğunluk Sınıfı: <span style="color:${data.status_color};font-weight:bold;">${data.status_color.toUpperCase()}</span>
+                    `);
+                })
+                .catch(error => console.log('Veriler bekleniyor...'));
+        }
+
+        // 2 saniyede bir veri tazelemeyi tetikle
+        setInterval(updateMapData, 2000);
+        updateMapData();
+    </script>
+</body>
+</html>

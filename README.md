@@ -9,14 +9,14 @@ Akıllı şehirler, mikro iklim analizleri ve kentsel karbon ayak izi takibi iç
 ### 🖥️ Gerçek Zamanlı Akıllı Şehir Komuta Merkezi
 Entegre web arayüzü sayesinde kullanıcılar; yapay zeka analiz akışını, harita üzerindeki dairesel tampon bölge analizini ve kümülatif karbon istatistiklerini tek bir ekrandan eşzamanlı olarak izleyebilir.
 
-![Komuta Merkezi Genel Görünüm](Ekran%20görüntüsü%202026-07-06%20182458.jpg)
+![Komuta Merkezi Genel Görünüm](assets/ana.png)
 
 ### 🧠 Canlı Yapay Zeka Görüntü İşleme Hattı
 Geliştirilen hassas algılama konfigürasyonları sayesinde sistem; birbirini kapatan (occlusion), kırmızı ışıkta bekleyen durağan araçları ve perspektif açıdan kaynaklanan piksel küçülmelerini başarıyla çözer.
 
 | Trafik Sıkışıklığı (Kuyruk Analizi) | Yüksek Hassasiyetli Tespit Akışı |
 |---|---|
-| ![Durağan Araç Tespiti](Ekran%20görüntüsü%202026-07-06%20181943.jpg) | ![YOLO Tespit Kutuları](Ekran%20görüntüsü%202026-07-06%20190535.jpg) |
+| ![Durağan Araç Tespiti](assets/ekran.png) | ![YOLO Tespit Kutuları](assets/yolo.png) |
 
 ---
 

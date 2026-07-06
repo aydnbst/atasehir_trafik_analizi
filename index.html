@@ -15,11 +15,8 @@
         .card { background: #2c3e50; padding: 12px 15px; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid #34495e; }
         .card h3 { margin: 0 0 5px 0; font-size: 11px; text-transform: uppercase; color: #bdc3c7; letter-spacing: 0.5px; }
         .card p { margin: 0; font-size: 24px; font-weight: bold; }
-        
-        /* Kamera Görüntü Alanı */
         #camera-container { width: 100%; margin-top: auto; border-radius: 8px; overflow: hidden; border: 2px solid #34495e; background: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         #camera-feed { width: 100%; height: auto; display: block; object-fit: cover; }
-        
         .footer-text { font-size: 11px; color: #7f8c8d; padding-top: 8px; border-top: 1px solid #2c3e50; margin-top: 10px; }
         hr { border: 0; height: 1px; background: #2c3e50; margin: 12px 0; }
     </style>
@@ -52,7 +49,7 @@
                 <div style="background: #2c3e50; padding: 6px 12px; color: #fff; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;">
                     🔴 CANLI YAPAY ZEKA ANALİZ AKIŞI
                 </div>
-                <img id="camera-feed" src="http://127.0.0.1:5000/video_feed" alt="Trafik Yayını Yüklüyor...">
+                <img id="camera-feed" src="" alt="Trafik Yayını Yüklüyor...">
             </div>
         </div>
         
@@ -68,16 +65,18 @@
         const centerCoords = [40.98833, 29.12550];
         const map = L.map('map').setView(centerCoords, 17);
 
-        // Dark Mode altlık katmanı
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap & CartoDB'
         }).addTo(map);
 
+        // Canlı video akış linkini dinamik eşitle
+        document.getElementById('camera-feed').src = window.location.origin + "/video_feed";
+
         let bufferLayer = null;
 
         function updateMapData() {
-            // Canlı trafik JSON dosyasını oku
-            fetch('live_traffic_data.json')
+            // Render üzerindeki JSON endpointine istek atıyoruz
+            fetch(window.location.origin + '/live_traffic_data.json')
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('current-count').innerText = data.current_vehicle_count;
@@ -89,7 +88,6 @@
                         map.removeLayer(bufferLayer);
                     }
 
-                    // Dinamik 100 metre yarıçaplı buffer güncellemesi
                     bufferLayer = L.circle(centerCoords, {
                         radius: 100,
                         color: data.status_color,
@@ -97,16 +95,10 @@
                         fillOpacity: 0.35,
                         weight: 2
                     }).addTo(map);
-                    
-                    bufferLayer.bindPopup(`
-                        <b>Kamera Etki Alanı Analizi</b><br>
-                        Yoğunluk Sınıfı: <span style="color:${data.status_color};font-weight:bold;">${data.status_color.toUpperCase()}</span>
-                    `);
                 })
                 .catch(error => console.log('Veriler bekleniyor...'));
         }
 
-        // 2 saniyede bir veri tazelemeyi tetikle
         setInterval(updateMapData, 2000);
         updateMapData();
     </script>

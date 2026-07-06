@@ -3,15 +3,15 @@ from ultralytics import YOLO
 import json
 import time
 import os
-from flask import Flask, Response
+from flask import Flask, Response, send_from_directory
 from flask_cors import CORS
 import threading
 
-# Gereksiz kütüphane loglarını maskele
+# Sunucu hata loglarını gizle
 os.environ["OPENCV_FFMPEG_LOGLEVEL"] = "-1"
 
 app = Flask(__name__)
-CORS(app)  # Tarayıcıların güvenlik (CORS) engeline takılmamak için şarttır
+CORS(app)
 
 output_frame = None
 lock = threading.Lock()
@@ -30,12 +30,18 @@ def video_processing_thread():
     last_json_update = time.time()
     counted_centers = []
 
-    print("Yapay Zeka Motoru Çalışıyor...")
+    print("Yapay Zeka Motoru Bulutta Calisiyor...")
 
-    while cap.isOpened():
+    while True:
+        if not cap.isOpened():
+            time.sleep(2)
+            cap = cv2.VideoCapture(VIDEO_SOURCE)
+            continue
+
         success, frame = cap.read()
         if not success:
-            # Yayının kopma ihtimaline karşı yeniden bağlanmayı dene
+            cap.release()
+            time.sleep(1)
             cap = cv2.VideoCapture(VIDEO_SOURCE)
             continue
 
@@ -68,7 +74,6 @@ def video_processing_thread():
         if len(counted_centers) > 1000:
             counted_centers = counted_centers[-500:]
 
-        # JSON Çıktısı Üretme
         if time.time() - last_json_update > 2.0:
             last_json_update = time.time()
             status_color = "green" if current_vehicle_count < 4 else "orange" if current_vehicle_count < 9 else "red"
@@ -83,10 +88,8 @@ def video_processing_thread():
             with open(JSON_PATH, "w") as f:
                 json.dump(data_to_export, f, indent=4)
 
-        # UI değerini video akışının üstüne de şıkça yazalım
-        cv2.putText(frame, f"Anlik Arac (Yapay Zeka): {current_vehicle_count}", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        cv2.putText(frame, f"Anlik Arac: {current_vehicle_count}", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
-        # Kareyi web yayını havuzuna kilitleyerek kopyala
         with lock:
             output_frame = frame.copy()
 
@@ -98,7 +101,6 @@ def generate_frames():
         with lock:
             if output_frame is None:
                 continue
-            # Görüntüyü sıkıştırıp MJPEG formatı için byte array'e çeviriyoruz
             suc, encoded_img = cv2.imencode('.jpg', output_frame)
             if not suc:
                 continue
@@ -106,7 +108,17 @@ def generate_frames():
         
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-        time.sleep(0.04)  # ~25 FPS hız sabitleyici
+        time.sleep(0.05) # Bulut sunucusunu yormamak için ~20 FPS idealdir
+
+# BROWSER ENTEGRASYONU: Sitenin ana sayfasını Render'a açar
+@app.route('/')
+def index():
+    return send_from_directory('.', 'index.html')
+
+# JSON dosyasını tarayıcıya güvenli servis eder
+@app.route('/live_traffic_data.json')
+def get_json():
+    return send_from_directory('.', 'live_traffic_data.json')
 
 @app.route('/video_feed')
 def video_feed():
@@ -117,5 +129,6 @@ if __name__ == '__main__':
     t.daemon = True
     t.start()
     
-    # host='0.0.0.0' yaparak sunucunun dış dünyaya kapılarını tamamen açıyoruz
-    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
+    # Render portu dinamik yönettiği için PORT çevre değişkenini okuyoruz, yoksa 5000 açıyoruz
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)

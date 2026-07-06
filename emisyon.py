@@ -10,7 +10,7 @@ import threading
 # Sunucu hata loglarını gizle
 os.environ["OPENCV_FFMPEG_LOGLEVEL"] = "-1"
 
-app = Flask(__name__)
+app = Flask(__name__, root_path=os.path.dirname(os.path.abspath(__file__)))
 CORS(app)
 
 output_frame = None

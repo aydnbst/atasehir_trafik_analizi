@@ -1,17 +1,17 @@
-# 🗺️ Ataşehir Dereyolu Gerçek Zamanlı Trafik ve Emisyon Simülatörü
+# Ataşehir Dereyolu Gerçek Zamanlı Trafik ve Emisyon Simülatörü
 
 Akıllı şehirler, mikro iklim analizleri ve kentsel karbon ayak izi takibi için geliştirilmiş, Bilgisayarlı Görü (Computer Vision) ve Web GIS (Coğrafi Bilgi Sistemleri) teknolojilerini harmanlayan yenivelikçi bir altyapı projesi. Sistem, canlı şehir kameralarını Derin Öğrenme ile işleyerek yoğun veya dur-kalk trafikteki araçları bile kaçırmadan algılar ve Leaflet haritası üzerindeki 100 metrelik etki alanını (Buffer) anlık emisyon verileriyle simüle eder.
 
 ---
 
-## 🚀 Canlı Demo ve Arayüz Önizlemesi
+## Canlı Demo ve Arayüz Önizlemesi
 
-### 🖥️ Gerçek Zamanlı Akıllı Şehir Komuta Merkezi
+### Gerçek Zamanlı Akıllı Şehir Komuta Merkezi
 Entegre web arayüzü sayesinde kullanıcılar; yapay zeka analiz akışını, harita üzerindeki dairesel tampon bölge analizini ve kümülatif karbon istatistiklerini tek bir ekrandan eşzamanlı olarak izleyebilir.
 
 ![Komuta Merkezi Genel Görünüm](assets/ana.png)
 
-### 🧠 Canlı Yapay Zeka Görüntü İşleme Hattı
+### Canlı Yapay Zeka Görüntü İşleme Hattı
 Geliştirilen hassas algılama konfigürasyonları sayesinde sistem; birbirini kapatan (occlusion), kırmızı ışıkta bekleyen durağan araçları ve perspektif açıdan kaynaklanan piksel küçülmelerini başarıyla çözer.
 
 | Trafik Sıkışıklığı (Kuyruk Analizi) | Yüksek Hassasiyetli Tespit Akışı |
@@ -20,7 +20,7 @@ Geliştirilen hassas algılama konfigürasyonları sayesinde sistem; birbirini k
 
 ---
 
-## 🛠️ Öne Çıkan Teknik Özellikler
+## Öne Çıkan Teknik Özellikler
 
 * **Durağanlığa Duyarlı Tespit Motoru:** Klasik takip algoritmalarının duran araçları kaçırma eğilimini esnetmek için `YOLOv8s` modeli saf algılama (`predict`) modunda çalıştırılmış ve güven eşiği ($conf=0.15$) seviyesine çekilerek kilitlenen trafikteki araçlar bile yakalanmıştır.
 * **Mesafe Filtreli Koordinat Hafızası:** Araç kimlikleri (ID) olmadan toplam araç sayısının hatalı artmasını önlemek amacıyla Öklid mesafesine dayalı ($35\text{px}$ yarıçap) akıllı bir konum havuzu entegre edilmiştir. Böylece duran araçlar kümülatif emisyonu yapay olarak şişirmez.
@@ -37,7 +37,7 @@ Ardından ikinci bir terminal içerisinde
 
 Tarayıcınızı açıp http://localhost:8000 adresine giderek projenin canlı komuta merkezine erişebilirsiniz.
 
-## 🗂️ Proje Klasör Yapısı
+## Proje Klasör Yapısı
 
 Sistemi çalıştırmadan önce dizininizde aşağıdaki temel üretim dosyalarının bulunduğundan emin olun:
 
